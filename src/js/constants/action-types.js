@@ -1,0 +1,5 @@
+// src/js/constants/action-types.js
+
+export const UPDATE_TABLE_INPUT = "UPDATE_TABLE_INPUT";
+export const UPDATE_SELECTED_CURRENCY = "UPDATE_SELECTED_CURRENCY";
+export const UPDATE_PERCENTAGE_BOX = "UPDATE_PERCENTAGE_BOX";

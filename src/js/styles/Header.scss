@@ -1,0 +1,70 @@
+.converter-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 56px;
+
+  > p {
+    margin-top: 27px;
+    margin-left: 4px;
+    font-size: 13px;
+    font-weight: bold
+  }
+
+  > input {
+    margin-top: 10px;
+  }
+
+  &__title {
+    font-size: 19px;
+    font-family: sans-serif;
+    margin-right: 12px;
+    margin-left: 14px;
+    margin-top: 17px;
+  }
+
+  &__container {
+    display: flex;
+    > p {
+      margin-top: 22px;
+      font-size: 12px;
+    }
+    > input {
+      margin-top: 22px;
+      height: 15px;
+    }
+  }
+
+  &__currency-choose {
+    display: flex;
+    flex-direction: row;
+    margin-top: 7px;
+
+    > p {
+      font-size: 12px;
+      margin-top: 15px;
+      margin-right: 1px;
+      font-family: sans-serif;
+    }
+
+    > select {
+      width: 30px;
+      height: 20px;
+      font-size: 13px;
+      margin-top: 13px;
+      margin-left: 4px;
+      background-color: white;
+      border-color: #c5dcf3;
+      border-radius: 5px;
+      color: #c5dcf3;
+      border-width: 1px;
+      margin-right: 6px;
+
+      -moz-appearance: none;
+      //background: #eeeeee url("../img/arrow_1.png") no-repeat center right;
+
+    }
+
+  }
+
+}

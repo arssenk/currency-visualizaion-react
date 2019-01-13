@@ -1,12 +1,13 @@
 import {UPDATE_PERCENTAGE_BOX, UPDATE_SELECTED_CURRENCY, UPDATE_TABLE_INPUT} from "../constants/action-types";
 import {INITIAL_CHOSEN_CURRENCY, INITIAL_DATA} from "../constants/config";
-import {CURRENCY_HISTORY} from "../constants/currencyHistory";
+import {CURRENCY_HISTORY, DATA_MOVING} from "../constants/currencyHistory";
 
 const initialState = {
     data: INITIAL_DATA,
     currencyHistory: CURRENCY_HISTORY,
     selectedCurrency: INITIAL_CHOSEN_CURRENCY,
-    percentageBoxChecked: false
+    percentageBoxChecked: false,
+    currencyPredictionPoints: DATA_MOVING
 };
 
 const rootReducer = (state = initialState, action) => {

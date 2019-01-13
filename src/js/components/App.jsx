@@ -9,9 +9,11 @@ const App = () => (
 
     <div>
         <Header />
-        <ConvertTable />
-        <LineChart />
-        <BarChart />
+        <div className="App">
+            <ConvertTable />
+            <LineChart/>
+            <BarChart/>
+        </div>
     </div>
 
 );

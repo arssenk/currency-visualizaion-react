@@ -1,3 +1,56 @@
-
+.ConvertTable {
+  width: 283px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-content: space-around; }
+  .ConvertTable__input-section {
+    display: flex;
+    flex-direction: row;
+    margin-left: 1px;
+    height: 17%; }
+  .ConvertTable__image-container {
+    display: flex;
+    flex-direction: row; }
+  .ConvertTable__currency-img {
+    width: 8px;
+    height: 8px;
+    margin-top: 8px;
+    margin-right: 8px;
+    margin-left: 13px;
+    border-radius: 3px;
+    padding: 3px 1px; }
+  .ConvertTable__input-exchange {
+    width: 65px;
+    height: 14px;
+    margin-top: 5px;
+    border-radius: 3px;
+    border: 1px solid #eeeeee; }
+  .ConvertTable__output-exchange {
+    width: 64px;
+    height: 16px;
+    padding-top: 6px;
+    border-color: transparent;
+    font-size: 11px;
+    overflow: auto;
+    text-align: right; }
+  .ConvertTable__input-percentage {
+    display: flex;
+    flex-direction: column;
+    margin-right: 6px; }
+  .ConvertTable__input-percentage-form {
+    width: 52px;
+    margin-top: 5px;
+    height: 13px;
+    margin-left: 13px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #eeeeee; }
+  .ConvertTable__title {
+    font-size: 11px;
+    height: 13%;
+    justify-content: center;
+    word-wrap: break-word;
+    margin: 3px 0 8px 15px; }
 
 /*# sourceMappingURL=ConvertTable.css.map */

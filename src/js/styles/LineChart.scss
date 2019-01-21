@@ -1,0 +1,56 @@
+.LineChart {
+  & > p {
+    font-size: 11px;
+    font-weight: bold;
+    font-family: sans-serif;
+    margin-bottom: 1px;
+    margin-left: 29px;
+    margin-top: 3px;
+
+  }
+  & > p:last-of-type {
+    color: grey;
+    font-size: 10px;
+    margin-top: 0;
+    font-weight: normal;
+  }
+
+
+  &__path {
+    fill: none;
+    stroke-width: 2px;
+  }
+
+  &__path:hover {
+    fill: red;
+  }
+
+  //// Remove tick marks
+  &__axis-bottom line, &__axis-left line {
+    stroke: #fff;
+  }
+
+  // Remove the axis itself
+  &__axis-bottom  path, &__axis-left path {
+    display: none;
+  }
+
+  &__grid line {
+    stroke: lightgrey;
+    stroke-opacity: 0.3;
+    shape-rendering: crispEdges;
+    stroke-width: 1px;
+  }
+
+  &__grid path {
+    stroke-width: 1px;
+    stroke-opacity: 0.5;
+    stroke: lightgrey;
+    shape-rendering: crispEdges;
+  }
+
+  &__grid .tick > text {
+    font-size: 12px;
+  }
+
+}

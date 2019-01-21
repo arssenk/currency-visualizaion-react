@@ -1,0 +1,28 @@
+
+.BarChart {
+  display: flex;
+  flex-direction: column-reverse;
+  margin-top: 5px;
+  &__total-container{
+    margin-left: 54px;
+    font-size: 14px;
+    font-weight: bold;
+    :last-child{
+      margin-left: 83px;
+    }
+  }
+  &__axis-bottom{
+    font-size: 12px
+  }
+
+    // Remove tick marks
+  &__axis-bottom line, &__axis-left line {
+    stroke: #fff;
+  }
+
+  // Remove the axis itself
+  &__axis-bottom  path, &__axis-left path {
+    display: none;
+  }
+}
+

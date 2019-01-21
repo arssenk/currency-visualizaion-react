@@ -1,5 +1,7 @@
 .App {
-  display: flex;
-  flex-direction: row; }
+  width: 67.7%; }
+  .App__container {
+    display: flex;
+    flex-direction: row; }
 
 /*# sourceMappingURL=App.css.map */

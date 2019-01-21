@@ -1,0 +1,50 @@
+.Header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  height: 56px; }
+  .Header > p {
+    margin-top: 27px;
+    margin-left: 4px;
+    font-size: 13px;
+    font-weight: bold; }
+  .Header > input {
+    margin-top: 10px; }
+  .converter-header__title {
+    font-size: 19px;
+    font-family: sans-serif;
+    margin-right: 12px;
+    margin-left: 14px;
+    margin-top: 17px; }
+  .converter-header__container {
+    display: flex; }
+    .converter-header__container > p {
+      margin-top: 22px;
+      font-size: 12px; }
+    .converter-header__container > input {
+      margin-top: 22px;
+      height: 15px; }
+  .converter-header__currency-choose {
+    display: flex;
+    flex-direction: row;
+    margin-top: 7px; }
+    .converter-header__currency-choose > p {
+      font-size: 12px;
+      margin-top: 15px;
+      margin-right: 1px;
+      font-family: sans-serif; }
+    .converter-header__currency-choose > select {
+      width: 30px;
+      height: 20px;
+      font-size: 13px;
+      margin-top: 13px;
+      margin-left: 4px;
+      background-color: white;
+      border-color: #c5dcf3;
+      border-radius: 5px;
+      color: #c5dcf3;
+      border-width: 1px;
+      margin-right: 6px;
+      -moz-appearance: none; }
+
+/*# sourceMappingURL=Header.css.map */

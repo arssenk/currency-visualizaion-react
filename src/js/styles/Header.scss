@@ -1,4 +1,4 @@
-.converter-header {
+.Header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -61,7 +61,7 @@
       margin-right: 6px;
 
       -moz-appearance: none;
-      //background: #eeeeee url("../img/arrow_1.png") no-repeat center right;
+      //background: #eeeeee URL_API("../img/arrow_1.png") no-repeat center right;
 
     }
 

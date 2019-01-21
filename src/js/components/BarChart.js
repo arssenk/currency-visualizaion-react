@@ -3,138 +3,112 @@ import "../styles/BarChart.css";
 import {compose, mapProps} from "recompose";
 import {connect} from "react-redux";
 import * as d3 from "d3";
-import {convertCurrency} from "../helpers/utils";
+import {select} from "d3-selection";
+import {convertCurrency, formatCurrenciesForBarChart, formatTotalValue} from "../helpers/utils";
+import {getData} from "../actions/index";
 
 class BarChart extends Component {
 
     componentDidMount() {
+        // this.props.getData(this.props.supportedCurrenciesAll, this.props.selectedCurrency);
         this.renderBarChart()
+
     }
 
-    renderBarChart() {
-
-        //TODO remove valieable and move to mapProps the slice
-        let dataFourMonth = this.props.currencyPredictionPoints.slice(1, this.props.currencyPredictionPoints.length);
-
-        let namesXAxisBar = ["сегодня", "через год"];
-        //TODO rerender the bar in different way
-        d3.select(".BarChart__svg").remove();
-
-        d3.select(".BarChart").append("svg").attr("class", "BarChart__svg")
-            .attr("width", 300).attr("height", 225);
-        //
-        let barChart = d3.select(".BarChart__svg"),
-            marginBar = {top: 21, right: 21, bottom: 25, left: 53},
-            widthBar = +barChart.attr("width") - marginBar.left - marginBar.right,
-            heightBar = +barChart.attr("height") - marginBar.top - marginBar.bottom,
-            gBar = barChart.append("g").attr("transform", "translate(" + marginBar.left + "," + marginBar.top + ")");
+    getProperData() {
+        let marginBar = {top: 21, right: 21, bottom: 25, left: 53},
+            widthBar = this.props.width - marginBar.left - marginBar.right,
+            heightBar = this.props.height - marginBar.top - marginBar.bottom;
 
         let xBar = d3.scaleBand()
             .rangeRound([0, widthBar])
             .paddingInner(0.02);
 
-        let xLabelsBarChart = d3.scaleOrdinal().domain(namesXAxisBar)
+        let xLabelsBarChart = d3.scaleOrdinal().domain(this.props.xAxisLabels)
             .range([widthBar / 8 - 2, 7 * widthBar / 8 - 2]);
 
         let yBar = d3.scaleLinear()
             .rangeRound([heightBar, 0]);
 
-        console.log(dataFourMonth)
-        //TODO check if correct schemeAccent
-        let colors = d3.scaleOrdinal(d3.schemeAccent);
+        //TODO check if correct schemePaired
+        let colors = d3.scaleOrdinal(d3.schemePaired);
 
-        let keys = [];
-        //
-        //     if (document.getElementById("percentage_checkbox").checked) {
-        //
-        //         //Create "EUR", "EUR_percentage", ... keys
-        //         for (let i = 0; i < SUPPORTED_CURRENCIES.length; i++) {
-        //             keys.push(SUPPORTED_CURRENCIES[i]);
-        //             keys.push(SUPPORTED_CURRENCIES[i] + "_percentage")
-        //         }
-        //     }
-        //     else {
-        keys = this.props.supportedCurrencies;
-        //     }
-        xBar.domain(dataFourMonth.map((d) => {
+        colors.domain(this.props.supportedCurrencies);
+
+        xBar.domain(this.props.currencyPredictionPoints.map((d) => {
             return d.date;
         }));
-        yBar.domain([0, d3.max(dataFourMonth, (d) => {
+
+        yBar.domain([0, d3.max(this.props.currencyPredictionPoints, (d) => {
             return d.total * 1.5;
         })]);
-        //
-        colors.domain(keys);
-        //
-        const COLORS_FOR_CURR = ["#0066cc", "#009933", "#ff9900", "#ff0000", "#b35900", "#862d59", "#F1EE19", "#D611CC"];
-        const colorsForPercentage = ["#66a3e0", "#66c285", "#ffb84d", "#ff4d4d", "#ff9933", "#d98cb3", "#FEFA01", "#FE01F0"];
 
-        gBar.append("g")
-            .selectAll("g")
-            .data(d3.stack().keys(keys)(dataFourMonth))
-            .enter().append("g")
-            .attr("fill", (d) => {
-                if (this.props.supportedCurrencies.includes(d.key)) {
-                    return COLORS_FOR_CURR[this.props.supportedCurrencies.indexOf(d.key)]
-                }
-                else if (d.key.split("_").length > 1 && d.key.split("_")[1] === "percentage") {
-                    return colorsForPercentage[this.props.supportedCurrencies.indexOf(d.key.split("_")[0])]
-                }
-                else {
-                    return colors(d.key);
-                }
-            })
-            .selectAll("rect")
-            .data(function (d) {
-                return d;
-            })
-            .enter().append("rect")
-            .attr("x", function (d) {
-                return xBar(d.data.date)
-            })
-            .attr("y", function (d) {
-                return yBar(d[1]);
-            })
-            .attr("height", function (d) {
-                return yBar(d[0]) - yBar(d[1]);
-            })
-            .attr("width", xBar.bandwidth());
+        return {marginBar, xBar, xLabelsBarChart, yBar, colors, heightBar}
+    }
 
-        gBar.append("g")
-            .attr("class", "bar-chart__axis-bottom")
-            .attr("transform", "translate(0," + heightBar + ")")
-            .call(d3.axisBottom(xLabelsBarChart))
-            .attr("font-size", "12px");
+    getTickValue(d, i, maxTicks){
+        if (i === 0) {
+            return " "
+        }
+        else if (i === maxTicks - 1) {
+            return d3.format(".2s")(d) + " " + this.props.selectedCurrencyTxt
+        }
+        return d3.format(".2s")(d)
+    }
+    // getColorForLayer(stackLayer, layerIndex){
+    //     if (this.props.supportedCurrencies.includes(d.key)) {
+    //         return COLORS_FOR_CURR[this.props.supportedCurrencies.indexOf(d.key)]
+    //     }
+    //     else if (d.key.split("_").length > 1 && d.key.split("_")[1] === "percentage") {
+    //         return colorsForPercentage[this.props.supportedCurrencies.indexOf(d.key.split("_")[0])]
+    //     }
+    //     else {
+    //         return colors(d.key);
+    //     }
+    //     return this.props.colors[layerIndex]
+    // }
 
-        let SUPPORTED_CURRENCIES_TXT = ["₽", "$", "€", "¥"];
-        gBar.append("g")
-            .attr("class", "bar-chart__axis-left")
-            .call(d3.axisLeft(yBar).ticks(4)
-                .tickFormat((d) => {
-                    let tickValue = d3.format(".2s")(d);
-                    // TOdo next sibling?
-                    // if (this.parentNode.nextSibling) {
-                    if (true) {
-                        return tickValue
-                    }
-                    else {
-                        return tickValue + " " + SUPPORTED_CURRENCIES_TXT[this.props.supportedCurrencies.indexOf(this.props.selectedCurrency)]
-                    }
-                }));
+    renderBarChart() {
 
-        //     updateTotalValuesGraph2(Math.round(dataFourMonth[0]["total"]),
-        //         Math.round(dataFourMonth[dataFourMonth.length - 1]["total"])
-        //     );
-
-        //Remove zero tick
-        barChart.selectAll(".tick")
-            .filter(function (d) {
-                return d === 0;
-            })
-            .remove();
+        //TODO remove valieable and move to mapProps the slice
+        let dataFourMonth = this.props.currencyPredictionPoints;
+        console.log("in bar", dataFourMonth);
     }
 
     render() {
-        return <div className="BarChart"></div>
+        let {marginBar, xBar, xLabelsBarChart, yBar, colors, heightBar} = this.getProperData()
+
+        return <div >
+            <svg className="BarChart" width={this.props.width}
+                 height={this.props.height}>
+                <g transform={`translate(${marginBar.left}, ${marginBar.top})`}>
+
+                    {d3.stack().keys(this.props.supportedCurrencies)(this.props.currencyPredictionPoints).map((stackLayer, layerIndex) => (
+                        <g fill={colors(stackLayer.key)} key={layerIndex}>
+                            {stackLayer.map((el, el_index) => (
+                                <rect key={el_index} x={xBar(el.data.date)} y={yBar(el[1])} height={yBar(el[0]) - yBar(el[1])}
+                                      width={xBar.bandwidth()}> </rect>
+                            ))}
+                        </g>
+                    ))}
+
+                    <g
+                        className="BarChart__axis-bottom"
+                        transform={`translate(0, ${heightBar})`}
+                        ref={node => select(node).call(d3.axisBottom(xLabelsBarChart))}
+                    />
+                    <g
+                        className="BarChart__axis-left"
+                        ref={node => select(node).call(d3.axisLeft(yBar).ticks(4).tickFormat((d, i) => this.getTickValue(d,i, yBar.ticks(4).length)))}
+                    />
+                </g>
+            </svg>
+            <div className="BarChart__total-container">
+
+                <output>{this.props.totalAtStart}</output>
+                <output>{this.props.totalAtEnd}</output>
+            </div>
+        </div>
     }
 
 }
@@ -145,27 +119,25 @@ const mapStateToProps = state => {
         todayCurrencies: state.currencyHistory[state.currencyHistory.length - 1],
         supportedCurrencies: Object.keys(state.data),
         selectedCurrency: state.selectedCurrency,
-        currencyPredictionPoints: state.currencyPredictionPoints
-
+        currencyPredictionPoints: state.currencyPredictionPoints,
+        selectedCurrencyTxt: state.supportedCurrenciesTxt[state.supportedCurrenciesAll.indexOf(state.selectedCurrency)],
+        colorsForCurrency: state.colorsForCurrency,
+        colorsForPercentageCurrency: state.colorsForPercentageCurrency
     };
 };
 
 //TODO need to pass every prop
-const convertValues = mapProps(({data, todayCurrencies, supportedCurrencies, selectedCurrency, currencyPredictionPoints}) => ({
-    currencyPredictionPoints: currencyPredictionPoints.map((point) => ({
-        ...Object.assign({}, ...Object.keys(point).map((key) => {
-            return supportedCurrencies.includes(key) ? {[key]:
-                convertCurrency(data[key].savings, point[key], point[selectedCurrency])} : {}
-        }
-        )),
-        date:point.date
-    })),
-    todayCurrencies, supportedCurrencies, selectedCurrency
+const convertValues = mapProps((props) => ({
+    ...props,
+    currencyPredictionPoints: formatCurrenciesForBarChart(props.data, props.currencyPredictionPoints, props.supportedCurrencies,
+        props.selectedCurrency, convertCurrency)
+
 }));
 
 //TODO check if can be merged into one function
-const addTotalValues = mapProps(({data, todayCurrencies, supportedCurrencies, selectedCurrency, currencyPredictionPoints}) => ({
-    currencyPredictionPoints: currencyPredictionPoints.map((point) => ({
+const addTotalValues = mapProps((props) => ({
+    ...props,
+    currencyPredictionPoints: props.currencyPredictionPoints.map((point) => ({
         ...point,
         total: Object.values(point).reduce((a, b) => {
             if (typeof b !== "string") {
@@ -173,29 +145,22 @@ const addTotalValues = mapProps(({data, todayCurrencies, supportedCurrencies, se
             }
             return a
         })
-
-    })),
-    todayCurrencies, supportedCurrencies, selectedCurrency
+    }))
+}));//TODO check if can be merged into one function
+const addXAxisLabels = mapProps((props) => ({
+    ...props,
+    xAxisLabels: ["сегодня", "через год"]
 }));
 
-const enhancer = compose(connect(mapStateToProps), convertValues, addTotalValues);
+//TODO check if can be merged into one function
+const addSumValues = mapProps((props) => ({
+    ...props,
+    totalAtStart: formatTotalValue(props.currencyPredictionPoints[0]["total"], props.selectedCurrencyTxt
+    ),
+    totalAtEnd: formatTotalValue(props.currencyPredictionPoints[props.currencyPredictionPoints.length - 1]["total"], props.selectedCurrencyTxt),
+}));
+
+const enhancer = compose(connect(mapStateToProps, {getData}), convertValues, addTotalValues, addSumValues, addXAxisLabels);
 export default enhancer(BarChart);
 
-//
-// function updateTotalValuesGraph2(val1, val2) {
-//
-//     document.getElementById("graph-2-total-" + 1).value =
-//         val1 + " " + SUPPORTED_CURRENCIES_TXT[SUPPORTED_CURRENCIES.indexOf(getChosenCurrency())];
-//
-//     document.getElementById("graph-2-total-" + 2).value =
-//         val2 + " " + SUPPORTED_CURRENCIES_TXT[SUPPORTED_CURRENCIES.indexOf(getChosenCurrency())];
-//
-// }
 
-function createDeepCopy(o) {
-    let r = [];
-    for (let i = 0; i < o.length; i++) {
-        r.push(Object.assign({}, o[i]))
-    }
-    return Object.values(r)
-}

@@ -1,0 +1,93 @@
+.ConvertTable {
+  width: 283px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-content: space-around;
+
+  //&__table{
+  //  width:350px;
+  //}
+  &__input-section {
+    display: flex;
+    flex-direction: row;
+    margin-left: 1px;
+    height: 17%;
+  }
+  &__image-container{
+    display: flex;
+    flex-direction: row;
+  }
+
+  &__currency-img {
+    width: 8px;
+    height: 8px;
+    margin-top: 8px;
+    margin-right: 8px;
+    margin-left: 13px;
+    border-radius: 3px;
+    padding: 3px 1px;
+  }
+
+  //&__add-currency-button {
+  //  width: 75px;
+  //  height: 25px;
+  //  margin-left: 14px;
+  //  border-radius: 5px;
+  //  color: white;
+  //  font-size: 12px;
+  //  background-color: #058bff;
+  //  border: 1px solid white;
+  //  padding-right: 10px;
+  //  margin-top: 2px;
+  //}
+
+  &__input-exchange {
+    width: 65px;
+    height: 14px;
+    margin-top: 5px;
+    border-radius: 3px;
+    border: 1px solid #eeeeee;
+  }
+
+  &__output-exchange {
+    width: 64px;
+    height: 16px;
+    padding-top: 6px;
+    border-color: transparent;
+    font-size: 11px;
+    overflow: auto;
+    text-align: right;
+  }
+  //
+  //&__input-fields {
+  //  display: flex;
+  //  flex-direction: column;
+  //}
+
+  &__input-percentage {
+    display: flex;
+    flex-direction: column;
+    margin-right: 6px;
+  }
+
+  &__input-percentage-form {
+    width: 52px;
+    margin-top: 5px;
+    height: 13px;
+    margin-left: 13px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #eeeeee;
+  }
+
+  &__title {
+    font-size: 11px;
+    height: 13%;
+    justify-content: center;
+    word-wrap: break-word;
+    margin: 3px 0 8px 15px;
+  }
+}
+
+

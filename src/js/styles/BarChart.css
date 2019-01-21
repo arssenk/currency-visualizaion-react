@@ -1,0 +1,18 @@
+.BarChart {
+  display: flex;
+  flex-direction: column-reverse;
+  margin-top: 5px; }
+  .BarChart__total-container {
+    margin-left: 54px;
+    font-size: 14px;
+    font-weight: bold; }
+    .BarChart__total-container :last-child {
+      margin-left: 83px; }
+  .BarChart__axis-bottom {
+    font-size: 12px; }
+  .BarChart__axis-bottom line, .BarChart__axis-left line {
+    stroke: #fff; }
+  .BarChart__axis-bottom path, .BarChart__axis-left path {
+    display: none; }
+
+/*# sourceMappingURL=BarChart.css.map */

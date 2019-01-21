@@ -5,14 +5,16 @@ import LineChart from "./LineChart";
 import BarChart from "./BarChart";
 import Header from "./Header";
 
-const App = () => (
 
-    <div>
+const App = () => (
+//TODO load history at beginning
+
+    <div className="App">
         <Header />
-        <div className="App">
+        <div className="App__container">
             <ConvertTable />
-            <LineChart/>
-            <BarChart/>
+            <LineChart width={270} height={236}/>
+            <BarChart width={307} height={226}/>
         </div>
     </div>
 

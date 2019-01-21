@@ -1,10 +1,10 @@
 import React, {Component} from "react";
 import "../styles/LineChart.css";
 import * as d3 from "d3";
-import {convertCurrency, isCurrentYear} from "../helpers/utils";
-import {compose} from "redux";
+import {convertCurrency, convertToYYMMDDFormat} from "../helpers/utils";
+import {compose} from "recompose";
 import {connect} from "react-redux";
-import {DATA_MOVING} from "../constants/currencyHistory";
+import {updatePredictionPoint} from "../actions/index";
 
 
 class LineChart extends Component {
@@ -12,42 +12,61 @@ class LineChart extends Component {
         this.renderLineChart()
     }
 
+    componentDidUpdate(prevProps) {
+        if (prevProps.selectedCurrency !== this.props.selectedCurrency) {
+            //TODO rerender the bar in different way
+            //Clean content of svg
+            d3.select(this.svgEl).selectAll("*").remove();
+
+            this.renderLineChart()
+        }
+
+    }
+
+    createDataForGraph(dataSource, props, timeParser) {
+        return props.supportedCurrencies.filter(item => {
+            return item !== props.selectedCurrency
+        }).map((currentCurrencyToAssign) => {
+            return {
+                currentCurrency: currentCurrencyToAssign,
+                values: dataSource.map((d) => {
+                    return {
+                        date: timeParser(d.date),
+                        currency: convertCurrency(1,
+                            d[currentCurrencyToAssign], d[props.selectedCurrency]),
+                        currencyName: currentCurrencyToAssign
+
+                    };
+                })
+            };
+        })
+    }
+
+
     renderLineChart() {
         const COLORS_FOR_CURR = ["#0066cc", "#009933", "#ff9900", "#ff0000", "#b35900", "#862d59", "#F1EE19", "#D611CC"];
 
-        let data = Object.values(Object.assign({}, this.props.currencyHistory));
-        let dataToSplit = Object.values(Object.assign({}, data));
+        let dataStatic = this.props.currencyHistory;
+        let dataMoving = this.props.currencyPredictionPoints;
+        let dataCombined = dataStatic.concat(dataMoving);
 
-        let dataStatic = [];
-        // let dataMoving = [this.props.todayCurrencies];
-        let dataMoving = DATA_MOVING;
         let namesXAxis = ["год назад", "сегодня", "через год"];
+        console.log("in line chart dataStatic", dataStatic , "dataMob", dataMoving)
 
-
-        for (let i = 0; i < dataToSplit.length; i++) {
-
-            if (isCurrentYear(dataToSplit[i].date, this.props.todayCurrencies.date)) {
-                dataStatic.push(dataToSplit[i]);
-            }
-            else {
-                dataMoving.push(dataToSplit[i])
-            }
-        }
-
-        //Removing old graph
-        d3.select(".LineChart__svg").remove();
-
-        //Appending new graph
-        d3.select(".LineChart").append("svg").attr("class", "LineChart__svg").attr("width", 270)
-            .attr("height", 236);
-
-        let svgLineChart = d3.select(".LineChart__svg"),
+        let svgLineChart = d3.select(this.svgEl),
             marginLineChart = {top: 5, right: 20, bottom: 60, left: 30},
-            widthLineChart = svgLineChart.attr("width") - marginLineChart.left - marginLineChart.right,
-            heightLineChart = svgLineChart.attr("height") - marginLineChart.top - marginLineChart.bottom,
+            widthLineChart = this.props.width - marginLineChart.left - marginLineChart.right,
+            heightLineChart = this.props.height - marginLineChart.top - marginLineChart.bottom,
             gLineChart = svgLineChart.append("g").attr("transform", "translate(" + marginLineChart.left + ","
                 + marginLineChart.top + ")");
 
+        let timeParser = d3.timeParse("%Y-%m-%d");
+
+        let focusCurrencies = [];
+        let drags = [];
+        let draggedFunctions = [];
+        let lineMovingItems = [];
+        // let lineConcatenateItems = [];
 
         let x = d3.scaleTime().range([1, widthLineChart]);
 
@@ -57,103 +76,46 @@ class LineChart extends Component {
 
         let y = d3.scaleLinear().range([heightLineChart, 0]);
 
-        let colorsLineChart = d3.scaleOrdinal(d3.schemeAccent);
-        // let colorsLineChart = d3.scaleOrdinal(d3.schemeCategory20);
+        let colorsDomain = d3.scaleOrdinal(d3.schemeAccent);
+        // let colorsDomain = d3.scaleOrdinal(d3.schemeCategory20);
 
-        function make_y_gridlines() {
-            return d3.axisLeft(y)
-                .ticks(4)
-        }
-
-        function make_x_gridlines() {
-            return d3.axisBottom(xLabels.paddingInner(0).paddingOuter(0.4))
-        }
-
-        let timeParser = d3.timeParse("%Y-%m-%d");
-
-        let focusCurrencies = [];
-        let drags = [];
-        let draggedFunctions = [];
-        let lineMovingItems = [];
-        let lineConcatenateItems = [];
-        //
-        //
         let line = d3.line()
-            .x( (d) => {
+            .x((d) => {
                 return x(d.date);
             })
-            .y( (d)=> {
+            .y((d) => {
                 return y(d.currency);
             });
-        //
-        let currencies = this.props.supportedCurrencies.filter(item => {
-            return item !== this.props.selectedCurrency
-        }).map((currentCurrencyToAssign) => {
 
-            return {
-                currentCurrency: currentCurrencyToAssign,
-                values: data.map((d) => {
-                    return {
-                        date: timeParser(d.date),
-                        currency: convertCurrency(1,
-                            d[currentCurrencyToAssign],  d[this.props.selectedCurrency])
-                    };
-                })
-            };
-        });
+        let currencies = this.createDataForGraph(dataCombined, this.props, timeParser);
+        let currenciesStatic = this.createDataForGraph(dataStatic, this.props, timeParser);
+        let currenciesMoving = this.createDataForGraph(dataMoving, this.props, timeParser);
 
-        let currenciesStatic = this.props.supportedCurrencies.filter(item => {
-            return item !== this.props.selectedCurrency
-        }).map((currentCurrencyToAssign) => {
-            return {
-                currentCurrency: currentCurrencyToAssign,
-                values: dataStatic.map((d) => {
-                    return {
-                        date: timeParser(d.date),
-                        currency: convertCurrency(1,
-                            d[currentCurrencyToAssign], d[this.props.selectedCurrency])
-                    };
-                })
-            };
-        });
-
-        let currenciesMoving = this.props.supportedCurrencies.filter(item => {
-            return item !== this.props.selectedCurrency
-        }).map( (currentCurrencyToAssign) => {
-            return {
-                currentCurrency: currentCurrencyToAssign,
-                values: dataMoving.map( (d) => {
-                    return {
-                        date: timeParser(d.date),
-                        currency: convertCurrency(1,
-                            d[currentCurrencyToAssign], d[this.props.selectedCurrency]),
-                        currencyName: currentCurrencyToAssign
-                    };
-                })
-            };
-        });
-
-        x.domain(d3.extent(data, function (d) {
+        x.domain(d3.extent(dataCombined, function (d) {
             return timeParser(d.date);
         }));
 
         //MinMax
         y.domain([
-            d3.min(currencies, (c) =>  {
+            d3.min(currencies, (c) => {
                 return d3.min(c.values, function (d) {
                     return d.currency - 0.1;
                 });
             }),
-            d3.max(currencies,  (c) => {
+            d3.max(currencies, (c) => {
                 return d3.max(c.values, function (d) {
                     return d.currency + d.currency / 8;
                 });
             })
         ]).nice();
 
-        // Create focus group items and drug functions for each currency
-        for (let i = 0; i < this.props.supportedCurrencies.length; i++) {
+        colorsDomain.domain(currencies.map(function (c) {
+            return c.currentCurrency;
+        }));
 
+
+        // Create focus group items and drug functions for each currency
+        this.props.supportedCurrencies.map((curr, i) => {
             focusCurrencies[i] = svgLineChart.append("g")
                 .attr("transform", "translate(" + marginLineChart.left + "," + marginLineChart.top + ")");
             lineMovingItems[i] = d3.line()
@@ -164,50 +126,36 @@ class LineChart extends Component {
                     return y(d.currency);
                 });
 
-            lineConcatenateItems[i] = d3.line()
-                .x(function (d) {
-                    return x(d.date);
-                })
-                .y(function (d) {
-                    return y(d.currency);
-                });
-
-            draggedFunctions[i] = function (d) {
+            draggedFunctions[i] = (d) => {
                 if (d3.event.y < heightLineChart - 2 && d3.event.y > 2 && y.invert(d3.event.y) > 0) {
-                    console.log("111")
-
                     d.currency = y.invert(d3.event.y);
-                    d3.select(this)
+
+                    //Update circle coordinate
+                    d3.select(".active")
                         .attr('cx', x(d.date))
                         .attr('cy', y(d.currency));
+
+                    //Update path
                     focusCurrencies[i].select('path').attr('d', lineMovingItems[i]);
+                    // console.log("in line calling update Prediciton", d.currencyName, d.currency, "currenct state", this.props.currencyPredictionPoints[1])
 
-                    //____________________________________
-                    // updateCurrency(d);
-                    // renderBarChart(window.currencyHistory);
-
-
-
-                    // renderLineChart();
+                    //Update storage
+                    this.props.updatePredictionPoint(d.currencyName, d.currency,
+                        convertToYYMMDDFormat(d.date.getFullYear(), d.date.getMonth() + 1, d.date.getDate()));
 
                 }
-            }
-            ;
+            };
             drags[i] = d3.drag()
                 .on('start', dragstarted)
                 .on('drag', draggedFunctions[i])
                 .on('end', dragended);
 
+            return drags[i]
+        });
 
-        }
 
-
-        colorsLineChart.domain(currencies.map(function (c) {
-            return c.currentCurrency;
-        }));
-        //
         gLineChart.append("g")
-            .attr("class", "line-chart__axis-bottom")
+            .attr("class", "LineChart__axis-bottom")
             .attr("transform", "translate(0," + (heightLineChart - 1) + ")")
             .call(d3.axisBottom(xLabels))
             .attr("font-size", "11px");
@@ -217,14 +165,13 @@ class LineChart extends Component {
             .data(currenciesStatic)
             .enter().append("g")
             .attr("class", "currencyLines");
-        //
 
         currencyLines.append("path")
-            .attr("class", "line-chart__path")
+            .attr("class", "LineChart__path")
             .attr("d", function (d) {
                 return line(d.values);
             })
-            .style("stroke",  (d) =>{
+            .style("stroke", (d) => {
                 this.props.supportedCurrencies.filter(item => {
                     return item !== this.props.selectedCurrency
                 });
@@ -232,7 +179,7 @@ class LineChart extends Component {
                     return COLORS_FOR_CURR[this.props.supportedCurrencies.indexOf(d.currentCurrency)]
                 }
                 else {
-                    return colorsLineChart(d.currentCurrency);
+                    return colorsDomain(d.currentCurrency);
                 }
             });
 
@@ -242,9 +189,9 @@ class LineChart extends Component {
 
             focusCurrencies[i].append("path")
                 .datum(currenciesMoving[i].values)
-                .attr("class", "line-chart__moving-lines")
+                .attr("class", "LineChart__moving-lines")
                 .attr("fill", "none")
-                .style("stroke",  () => {
+                .style("stroke", () => {
                     if (this.props.supportedCurrencies.indexOf(this.props.selectedCurrency) <= i) {
                         return COLORS_FOR_CURR[i + 1]
                     }
@@ -257,6 +204,7 @@ class LineChart extends Component {
                 .attr("stroke-width", 2)
                 .attr("d", lineMovingItems[i]);
 
+            //Add circles
             focusCurrencies[i].selectAll('circle')
                 .data(currenciesMoving[i].values)
                 .enter()
@@ -269,7 +217,7 @@ class LineChart extends Component {
                     return y(d.currency);
                 })
                 .style('cursor', 'ns-resize')
-                .style('fill',  () => {
+                .style('fill', () => {
                     if (this.props.supportedCurrencies.indexOf(this.props.selectedCurrency) <= i) {
                         return COLORS_FOR_CURR[i + 1]
                     }
@@ -293,21 +241,21 @@ class LineChart extends Component {
 
         //Add grid
         svgLineChart.append("g")
-            .attr("class", "line-chart__grid")
+            .attr("class", "LineChart__grid")
             .attr("transform", "translate(" + marginLineChart.left + "," + (heightLineChart + marginLineChart.top ) + ")")
             .call(make_x_gridlines()
                 .tickSize(-heightLineChart)
                 .tickFormat("")
             );
-        //
+
         svgLineChart.append("g")
-            .attr("class", "line-chart__grid")
+            .attr("class", "LineChart__grid")
             .attr("transform", "translate(" + marginLineChart.left + "," + marginLineChart.top + ")")
             .call(make_y_gridlines()
                 .tickSize(-widthLineChart)
             );
 
-        // //Remove zero tick
+        //Remove zero tick
         svgLineChart.selectAll(".tick")
             .filter(function (d) {
                 return d === 0;
@@ -322,33 +270,47 @@ class LineChart extends Component {
             d3.select(this).classed('active', false);
         }
 
-        // function updateCurrency(currencyItem) {
-        //     for (let i = 0; i < window.currencyHistory.length; i++) {
-        //         if (JSON.stringify(timeParser(window.currencyHistory[i].date)) === JSON.stringify(currencyItem.date)) {
-        //             window.currencyHistory[i][currencyItem.currencyName] = 1 / currencyItem.currency;
-        //         }
-        //     }
-        //     return 1;
-        // }
+
+        function make_y_gridlines() {
+            return d3.axisLeft(y)
+                .ticks(4)
+        }
+
+        function make_x_gridlines() {
+            return d3.axisBottom(xLabels.paddingInner(0).paddingOuter(0.4))
+        }
     }
 
 
     render() {
-        return <div className="LineChart"></div>
+        return <div className="LineChart">
+            <p>История и прогноз курсов</p>
+            <p>Перетащите точку, чтобы изменить прогноз</p>
+            <svg
+                 width={this.props.width}
+                 height={this.props.height}
+                 ref={el => this.svgEl = el}>
+
+            </svg>
+        </div>
     }
 }
 
 const mapStateToProps = state => {
     return {
-        currencyHistory: state.currencyHistory,
-        todayCurrencies: state.currencyHistory[state.currencyHistory.length - 1],
+        currencyHistory: Object.values(state.currencyHistory),
         supportedCurrencies: Object.keys(state.data),
-        selectedCurrency: state.selectedCurrency
-
+        selectedCurrency: state.selectedCurrency,
+        currencyPredictionPoints: [Object.values(state.currencyHistory)[Object.values(state.currencyHistory).length - 1]].concat(Object.values(state.currencyPredictionPoints))
+    };
+};
+const mapDispatchToProps = dispatch => {
+    return {
+        updatePredictionPoint: (curr, value, date) => dispatch(updatePredictionPoint(curr, value, date)),
     };
 };
 
-const enhancer = compose(connect(mapStateToProps));
+const enhancer = compose(connect(mapStateToProps, mapDispatchToProps));
 
 export default enhancer(LineChart);
 

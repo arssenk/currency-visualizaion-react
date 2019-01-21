@@ -11,7 +11,7 @@ import {
     COLORS_FOR_CURRENCY,
     COLORS_FOR_PERCENTAGE_CURRENCY,
     INITIAL_CHOSEN_CURRENCY, INITIAL_DATA, SUPPORTED_CURRENCIES,
-    SUPPORTED_CURRENCIES_ALL, SUPPORTED_CURRENCIES_TXT
+    SUPPORTED_CURRENCIES_ALL, SUPPORTED_CURRENCIES_TXT, X_LABELS_BAR_CHART, X_LABELS_LINE_CHART
 } from "../constants/config";
 import {CURRENCY_HISTORY, DATA_MOVING} from "../constants/currencyHistory";
 
@@ -25,7 +25,10 @@ const initialState = {
     supportedCurrenciesAll: SUPPORTED_CURRENCIES_ALL,
     supportedCurrenciesTxt: SUPPORTED_CURRENCIES_TXT,
     colorsForCurrency: COLORS_FOR_CURRENCY,
-    colorsForPercentageCurrency: COLORS_FOR_PERCENTAGE_CURRENCY
+    colorsForPercentageCurrency: COLORS_FOR_PERCENTAGE_CURRENCY,
+    xLabelsLineChart: X_LABELS_LINE_CHART,
+    xLabelsBarChart: X_LABELS_BAR_CHART,
+
 
 };
 
@@ -48,6 +51,7 @@ const rootReducer = (state = initialState, action) => {
             };
 
         case UPDATE_PERCENTAGE_BOX:
+            console.log("changing percentaag to ", !state.percentageBoxChecked)
             return {
                 ...state,
                 percentageBoxChecked: !state.percentageBoxChecked

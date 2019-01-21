@@ -23,9 +23,9 @@ class LineChart extends Component {
 
     }
 
-    createDataForGraph(dataSource, props, timeParser) {
-        return props.supportedCurrencies.filter(item => {
-            return item !== props.selectedCurrency
+    createDataForGraph(dataSource, supportedCurrencies,selectedCurrency, timeParser) {
+        return supportedCurrencies.filter(item => {
+            return item !== selectedCurrency
         }).map((currentCurrencyToAssign) => {
             return {
                 currentCurrency: currentCurrencyToAssign,
@@ -33,7 +33,7 @@ class LineChart extends Component {
                     return {
                         date: timeParser(d.date),
                         currency: convertCurrency(1,
-                            d[currentCurrencyToAssign], d[props.selectedCurrency]),
+                            d[currentCurrencyToAssign], d[selectedCurrency]),
                         currencyName: currentCurrencyToAssign
 
                     };
@@ -77,7 +77,6 @@ class LineChart extends Component {
         let y = d3.scaleLinear().range([heightLineChart, 0]);
 
         let colorsDomain = d3.scaleOrdinal(d3.schemeAccent);
-        // let colorsDomain = d3.scaleOrdinal(d3.schemeCategory20);
 
         let line = d3.line()
             .x((d) => {
@@ -87,9 +86,9 @@ class LineChart extends Component {
                 return y(d.currency);
             });
 
-        let currencies = this.createDataForGraph(dataCombined, this.props, timeParser);
-        let currenciesStatic = this.createDataForGraph(dataStatic, this.props, timeParser);
-        let currenciesMoving = this.createDataForGraph(dataMoving, this.props, timeParser);
+        let currencies = this.createDataForGraph(dataCombined, this.props.supportedCurrencies, this.props.selectedCurrency, timeParser);
+        let currenciesStatic = this.createDataForGraph(dataStatic, this.props.supportedCurrencies, this.props.selectedCurrency, timeParser);
+        let currenciesMoving = this.createDataForGraph(dataMoving, this.props.supportedCurrencies, this.props.selectedCurrency, timeParser);
 
         x.domain(d3.extent(dataCombined, function (d) {
             return timeParser(d.date);
@@ -154,11 +153,6 @@ class LineChart extends Component {
         });
 
 
-        gLineChart.append("g")
-            .attr("class", "LineChart__axis-bottom")
-            .attr("transform", "translate(0," + (heightLineChart - 1) + ")")
-            .call(d3.axisBottom(xLabels))
-            .attr("font-size", "11px");
 
 
         let currencyLines = gLineChart.selectAll(".currencyLines")
@@ -232,12 +226,19 @@ class LineChart extends Component {
                     return this
                 }
                 else {
-                    this.remove()
+                    this.remove();
+                    return true
                 }
             })
                 .call(drags[i]);
         }
 
+        //Add bottom axis
+        gLineChart.append("g")
+            .attr("class", "LineChart__axis-bottom")
+            .attr("transform", "translate(0," + (heightLineChart - 1) + ")")
+            .call(d3.axisBottom(xLabels))
+            .attr("font-size", "11px");
 
         //Add grid
         svgLineChart.append("g")

@@ -11,11 +11,10 @@ export function convertToYYMMDDFormat(year, month, day) {
 
 export const rebaseCurrency = (currenciesArray, selectedCurrency) => {
     let result = {};
-    Object.keys(currenciesArray).map((date) => {
-        let baseCurr = currenciesArray[date][selectedCurrency]
-        Object.keys(currenciesArray[date]).map((currencyName) => {
+    Object.keys(currenciesArray).forEach((date) => {
+        let baseCurr = currenciesArray[date][selectedCurrency];
+        Object.keys(currenciesArray[date]).forEach((currencyName) => {
             if (currencyName !== "date") {
-                // console.log("debig",  result)
                 result[date] = {
                     ...result[date],
                     [currencyName]: currenciesArray[date][currencyName] / baseCurr
@@ -29,37 +28,43 @@ export const rebaseCurrency = (currenciesArray, selectedCurrency) => {
     return result;
 };
 export const formatCurrenciesForBarChart = (data, currencyPredictionPoints, supportedCurrencies, selectedCurrency, convertFunction) => {
-    // console.log("formatCurrenciesForBarChart ", currencyPredictionPoints)
-    let result = Object.keys(currencyPredictionPoints).map((currency) => ({
-        ...Object.assign({}, ...Object.keys(currencyPredictionPoints[currency]).map((key) => {
-                return supportedCurrencies.includes(key) ? {
-                    [key]: convertFunction(data[key].savings, currencyPredictionPoints[currency][key],
-                        currencyPredictionPoints[currency][selectedCurrency])
-                } : {}
+    //TODO change here
+    let resultFinal = {};
+    Object.keys(currencyPredictionPoints).forEach((date) => {
+        Object.keys(currencyPredictionPoints[date]).forEach((currencyName) =>{
+            if (currencyName !== "date"){
+                resultFinal[date] = {
+                    ...resultFinal[date],
+                    [currencyName]:convertFunction(data[currencyName].savings, currencyPredictionPoints[date][currencyName],
+                        currencyPredictionPoints[date][selectedCurrency])
+                };
             }
-        )),
-        date: currencyPredictionPoints[currency].date
-    }));
-    return result
+        });
+        resultFinal[date]= {
+            ...resultFinal[date],
+            date: currencyPredictionPoints[date].date
+        }
+
+    });
+   return resultFinal;
 };
 
 
-export function processJson(json, supportedCurrenciesAll) {
+export function processJson(json, selectedCurrencies) {
     let originalBase = json.base;
     let result = {};
 
     for (let date in json.rates) {
-        // TODO remove line
-        if (json.rates.hasOwnProperty(date)) {
-            for (let currencyIndex = 0; currencyIndex < supportedCurrenciesAll.length; currencyIndex++) {
 
-                let currentCurrency = supportedCurrenciesAll[currencyIndex];
+        if (json.rates.hasOwnProperty(date)) {
+            for (let currencyIndex = 0; currencyIndex < selectedCurrencies.length; currencyIndex++) {
+
+                let currentCurrency = selectedCurrencies[currencyIndex];
                 result[date] = {
                     ...result[date],
                     [currentCurrency]: json.rates[date][currentCurrency]
                 }
             }
-
             result[date][originalBase] = 1;
             result[date]["date"] = date;
         }
@@ -72,7 +77,7 @@ export function sortObjectByDate(data) {
         return new Date(a) - new Date(b)});
     let result = keys.map(id => {return {[id] :  data[id]}});
     return  Object.assign({}, ...result);
-    
+
 }
 
 
@@ -130,4 +135,23 @@ export function createDatesAYearAhead(currentDate) {
         result.push(convertToYYMMDDFormat(yearToWrite, monthToWrite, currDay));
     }
     return result;
+}
+
+
+export function convertComplexPercentage(number, percentage, n) {
+    return number * Math.pow(1 + percentage / 400, n) - number;
+}
+
+export function formatAllCurrencyNames(supportedCurrencies, percentageBoxChecked) {
+    if (percentageBoxChecked){
+        let result = [];
+        supportedCurrencies.forEach(currencyName =>{
+            result.push(currencyName);
+            result.push(currencyName + "_percentage")
+        });
+        return result
+    }
+    else{
+        return supportedCurrencies
+    }
 }

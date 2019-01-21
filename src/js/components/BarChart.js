@@ -4,16 +4,9 @@ import {compose, mapProps} from "recompose";
 import {connect} from "react-redux";
 import * as d3 from "d3";
 import {select} from "d3-selection";
-import {convertCurrency, formatCurrenciesForBarChart, formatTotalValue} from "../helpers/utils";
-import {getData} from "../actions/index";
+import {convertCurrency, formatAllCurrencyNames, formatCurrenciesForBarChart, formatTotalValue} from "../helpers/utils";
 
 class BarChart extends Component {
-
-    componentDidMount() {
-        // this.props.getData(this.props.supportedCurrenciesAll, this.props.selectedCurrency);
-        this.renderBarChart()
-
-    }
 
     getProperData() {
         let marginBar = {top: 21, right: 21, bottom: 25, left: 53},
@@ -24,7 +17,7 @@ class BarChart extends Component {
             .rangeRound([0, widthBar])
             .paddingInner(0.02);
 
-        let xLabelsBarChart = d3.scaleOrdinal().domain(this.props.xAxisLabels)
+        let xLabels = d3.scaleOrdinal().domain(this.props.xLabelsBarChart)
             .range([widthBar / 8 - 2, 7 * widthBar / 8 - 2]);
 
         let yBar = d3.scaleLinear()
@@ -43,10 +36,10 @@ class BarChart extends Component {
             return d.total * 1.5;
         })]);
 
-        return {marginBar, xBar, xLabelsBarChart, yBar, colors, heightBar}
+        return {marginBar, xBar, xLabels, yBar, colors, heightBar}
     }
 
-    getTickValue(d, i, maxTicks){
+    getTickValue(d, i, maxTicks) {
         if (i === 0) {
             return " "
         }
@@ -55,6 +48,7 @@ class BarChart extends Component {
         }
         return d3.format(".2s")(d)
     }
+
     // getColorForLayer(stackLayer, layerIndex){
     //     if (this.props.supportedCurrencies.includes(d.key)) {
     //         return COLORS_FOR_CURR[this.props.supportedCurrencies.indexOf(d.key)]
@@ -68,26 +62,21 @@ class BarChart extends Component {
     //     return this.props.colors[layerIndex]
     // }
 
-    renderBarChart() {
-
-        //TODO remove valieable and move to mapProps the slice
-        let dataFourMonth = this.props.currencyPredictionPoints;
-        console.log("in bar", dataFourMonth);
-    }
-
     render() {
-        let {marginBar, xBar, xLabelsBarChart, yBar, colors, heightBar} = this.getProperData()
+        let {marginBar, xBar, xLabels, yBar, colors, heightBar} = this.getProperData();
+        console.log("in bar", this.props.allCurrencyNames,this.props.currencyPredictionPoints, d3.stack().keys(Object.keys(this.props.currencyPredictionPoints))(this.props.currencyPredictionPoints));
 
         return <div >
             <svg className="BarChart" width={this.props.width}
                  height={this.props.height}>
                 <g transform={`translate(${marginBar.left}, ${marginBar.top})`}>
 
-                    {d3.stack().keys(this.props.supportedCurrencies)(this.props.currencyPredictionPoints).map((stackLayer, layerIndex) => (
+                    {d3.stack().keys(this.props.allCurrencyNames)(this.props.currencyPredictionPoints).map((stackLayer, layerIndex) => (
                         <g fill={colors(stackLayer.key)} key={layerIndex}>
                             {stackLayer.map((el, el_index) => (
-                                <rect key={el_index} x={xBar(el.data.date)} y={yBar(el[1])} height={yBar(el[0]) - yBar(el[1])}
-                                      width={xBar.bandwidth()}> </rect>
+                                <rect key={el_index} x={xBar(el.data.date)} y={yBar(el[1])}
+                                      height={yBar(el[0]) - yBar(el[1])}
+                                      width={xBar.bandwidth()}></rect>
                             ))}
                         </g>
                     ))}
@@ -95,11 +84,11 @@ class BarChart extends Component {
                     <g
                         className="BarChart__axis-bottom"
                         transform={`translate(0, ${heightBar})`}
-                        ref={node => select(node).call(d3.axisBottom(xLabelsBarChart))}
+                        ref={node => select(node).call(d3.axisBottom(xLabels))}
                     />
                     <g
                         className="BarChart__axis-left"
-                        ref={node => select(node).call(d3.axisLeft(yBar).ticks(4).tickFormat((d, i) => this.getTickValue(d,i, yBar.ticks(4).length)))}
+                        ref={node => select(node).call(d3.axisLeft(yBar).ticks(4).tickFormat((d, i) => this.getTickValue(d, i, yBar.ticks(4).length)))}
                     />
                 </g>
             </svg>
@@ -114,19 +103,39 @@ class BarChart extends Component {
 }
 
 const mapStateToProps = state => {
+    console.log("in state ", state.currencyPredictionPoints)
     return {
         data: state.data,
-        todayCurrencies: state.currencyHistory[state.currencyHistory.length - 1],
         supportedCurrencies: Object.keys(state.data),
         selectedCurrency: state.selectedCurrency,
         currencyPredictionPoints: state.currencyPredictionPoints,
         selectedCurrencyTxt: state.supportedCurrenciesTxt[state.supportedCurrenciesAll.indexOf(state.selectedCurrency)],
         colorsForCurrency: state.colorsForCurrency,
-        colorsForPercentageCurrency: state.colorsForPercentageCurrency
+        colorsForPercentageCurrency: state.colorsForPercentageCurrency,
+        xLabelsBarChart: state.xLabelsBarChart,
+        percentageBoxChecked: state.percentageBoxChecked
     };
 };
 
-//TODO need to pass every prop
+const addPercentageValuesFunction = (data, currencyPredictionPoints, percentageBoxChecked, supportedCurrencies) => {
+    //TODO need to be dependent on previous, check if ok to add percetage this way
+    let result = {};
+    if (percentageBoxChecked) {
+        Object.keys(currencyPredictionPoints).forEach((date, i) => {
+            supportedCurrencies.forEach(currencyName => {
+                result[date] = {
+                    ...currencyPredictionPoints[date],
+                    ...result[date],
+                    [currencyName + "_percentage"]: currencyPredictionPoints[date][currencyName] * data[currencyName].percentage / 100
+                }
+            });
+
+        });
+        return result;
+    }
+    return currencyPredictionPoints
+};
+
 const convertValues = mapProps((props) => ({
     ...props,
     currencyPredictionPoints: formatCurrenciesForBarChart(props.data, props.currencyPredictionPoints, props.supportedCurrencies,
@@ -134,10 +143,15 @@ const convertValues = mapProps((props) => ({
 
 }));
 
-//TODO check if can be merged into one function
+
+const addPercentageValues = mapProps((props) => ({
+    ...props,
+    currencyPredictionPoints: addPercentageValuesFunction(props.data, props.currencyPredictionPoints, props.percentageBoxChecked, props.supportedCurrencies)
+}));
+
 const addTotalValues = mapProps((props) => ({
     ...props,
-    currencyPredictionPoints: props.currencyPredictionPoints.map((point) => ({
+    currencyPredictionPoints: Object.values(props.currencyPredictionPoints).map((point) => ({
         ...point,
         total: Object.values(point).reduce((a, b) => {
             if (typeof b !== "string") {
@@ -146,13 +160,12 @@ const addTotalValues = mapProps((props) => ({
             return a
         })
     }))
-}));//TODO check if can be merged into one function
-const addXAxisLabels = mapProps((props) => ({
+}));
+const addAllCurrencyNames= mapProps((props) => ({
     ...props,
-    xAxisLabels: ["сегодня", "через год"]
+    allCurrencyNames: formatAllCurrencyNames(props.supportedCurrencies, props.percentageBoxChecked)
 }));
 
-//TODO check if can be merged into one function
 const addSumValues = mapProps((props) => ({
     ...props,
     totalAtStart: formatTotalValue(props.currencyPredictionPoints[0]["total"], props.selectedCurrencyTxt
@@ -160,7 +173,7 @@ const addSumValues = mapProps((props) => ({
     totalAtEnd: formatTotalValue(props.currencyPredictionPoints[props.currencyPredictionPoints.length - 1]["total"], props.selectedCurrencyTxt),
 }));
 
-const enhancer = compose(connect(mapStateToProps, {getData}), convertValues, addTotalValues, addSumValues, addXAxisLabels);
+const enhancer = compose(connect(mapStateToProps), convertValues, addPercentageValues, addTotalValues, addAllCurrencyNames, addSumValues);
 export default enhancer(BarChart);
 
 

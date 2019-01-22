@@ -103,7 +103,6 @@ class BarChart extends Component {
 }
 
 const mapStateToProps = state => {
-    console.log("in state ", state.currencyPredictionPoints)
     return {
         data: state.data,
         supportedCurrencies: Object.keys(state.data),

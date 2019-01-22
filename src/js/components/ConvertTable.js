@@ -1,9 +1,10 @@
 import React from "react";
 import {connect} from "react-redux";
-import {updateTableInput} from "../actions/index";
+import {updateModalShow, updateTableInput} from "../actions/index";
 import {compose, mapProps} from "recompose";
 import {convertCurrency, getCurrencyImagePath} from "../helpers/utils";
 import "../styles/ConvertTable.css";
+import Modal from "./Modal";
 
 
 const mapStateToProps = state => {
@@ -12,13 +13,14 @@ const mapStateToProps = state => {
         data: Object.values(state.data),
         percentageBoxChecked: state.percentageBoxChecked,
         todayCurrencies: Object.values(state.currencyHistory)[ Object.values(state.currencyHistory).length - 1],
-        selectedCurrency: state.selectedCurrency
+        selectedCurrency: state.selectedCurrency,
     };
 };
 
 const mapDispatchToProps = dispatch => {
     return {
         updateTableInput: (curr, value, key) => dispatch(updateTableInput(curr, value, key)),
+        updateModalShow: () => dispatch(updateModalShow())
     };
 };
 //TODO need to pass every prop
@@ -31,7 +33,7 @@ const addConvertedValues = mapProps((props) => ({
 }));
 
 
-const ConnectedConvertTable = ({data, updateTableInput, selectedCurrency, percentageBoxChecked}) => {
+const ConnectedConvertTable = ({data, updateTableInput, selectedCurrency, percentageBoxChecked, updateModalShow}) => {
 
     return (
         <section>
@@ -73,7 +75,9 @@ const ConnectedConvertTable = ({data, updateTableInput, selectedCurrency, percen
                 ))}
                 </tbody>
             </table>
-            <button>Add</button>
+            <button onClick={updateModalShow}>Add</button>
+            <Modal>
+            </Modal>
         </section>
     );
 };

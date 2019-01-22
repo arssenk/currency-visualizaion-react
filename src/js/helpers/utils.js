@@ -28,7 +28,6 @@ export const rebaseCurrency = (currenciesArray, selectedCurrency) => {
     return result;
 };
 export const formatCurrenciesForBarChart = (data, currencyPredictionPoints, supportedCurrencies, selectedCurrency, convertFunction) => {
-    //TODO change here
     let resultFinal = {};
     Object.keys(currencyPredictionPoints).forEach((date) => {
         Object.keys(currencyPredictionPoints[date]).forEach((currencyName) =>{
@@ -53,7 +52,6 @@ export const formatCurrenciesForBarChart = (data, currencyPredictionPoints, supp
 export function processJson(json, selectedCurrencies) {
     let originalBase = json.base;
     let result = {};
-
     for (let date in json.rates) {
 
         if (json.rates.hasOwnProperty(date)) {
@@ -107,6 +105,7 @@ export function generatePredictionPoints(lastCurrencies, supportedCurrencies, se
             tmpDataItem[currCurrencies[currencyIndex]] -= tmpDataItem[currCurrencies[currencyIndex]]
                 * (dataIndex) / 40
         }
+
         result[tmpDataItem.date]=tmpDataItem;
 
     }
@@ -154,4 +153,23 @@ export function formatAllCurrencyNames(supportedCurrencies, percentageBoxChecked
     else{
         return supportedCurrencies
     }
+}
+                                //hidd                  curHIst
+export function moveCurrencyItems(currencyHistoryFrom, currencyHistoryTo, currencyName){
+    let currencyHistoryFromResult = {},
+        currencyHistoryToResult = Object.assign({}, currencyHistoryTo);
+
+    Object.keys(currencyHistoryFrom).forEach(date =>{
+        currencyHistoryToResult[date] = {
+            ...currencyHistoryToResult[date],
+            [currencyName]: currencyHistoryFrom[date][currencyName]
+        };
+        currencyHistoryFromResult[date] = {
+            ...currencyHistoryFrom[date]
+        };
+
+        delete currencyHistoryFromResult[date][currencyName];
+    });
+    return [currencyHistoryFromResult, currencyHistoryToResult]
+
 }

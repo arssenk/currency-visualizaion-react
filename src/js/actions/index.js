@@ -1,8 +1,9 @@
 // src/js/actions/index.js
 
 import {
+    ADD_NEW_CURRENCY, ALLOW_RENDERING,
     DATA_LOADED,
-    UPDATE_CURRENCY_BASE,
+    UPDATE_CURRENCY_BASE, UPDATE_MODAL_SHOW,
     UPDATE_PERCENTAGE_BOX,
     UPDATE_PREDICTION_POINT,
     UPDATE_SELECTED_CURRENCY,
@@ -19,17 +20,31 @@ export const updateSelectedCurrency = (currencyName) => ({
     type: UPDATE_SELECTED_CURRENCY,
     currencyName
 });
-export const updatePercentageBox = (percentageBoxChecked) => ({
+export const updatePercentageBox = () => ({
     type: UPDATE_PERCENTAGE_BOX
 });
 export const updatePredictionPoint = (curr, value, date) => ({
     type: UPDATE_PREDICTION_POINT,
     curr, value, date
 });
-export const updateCurrencyBase = (currencyHistory, currencyPredictionPoints) => ({
+export const updateCurrencyBase = (rebasedCurrencyHistory, rebasedPredictionPoints) => ({
     type: UPDATE_CURRENCY_BASE,
-    currencyHistory, currencyPredictionPoints
+    rebasedCurrencyHistory, rebasedPredictionPoints
 });
+
+export const updateModalShow = () => ({
+    type: UPDATE_MODAL_SHOW
+});
+
+export const addNewCurrency = (currencyName) => ({
+    type: ADD_NEW_CURRENCY,
+    currencyName
+});
+
+export const updateAllowRendering = () => ({
+    type: ALLOW_RENDERING
+});
+
 
 export function getData() {
     return function (dispatch) {

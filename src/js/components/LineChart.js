@@ -13,11 +13,12 @@ class LineChart extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        if (prevProps.selectedCurrency !== this.props.selectedCurrency) {
+        //TODO ckeck if ok to rerender this way
+        if (prevProps.selectedCurrency !== this.props.selectedCurrency || prevProps.allowRendering !== this.props.allowRendering) {
             //TODO rerender the bar in different way
+
             //Clean content of svg
             d3.select(this.svgEl).selectAll("*").remove();
-
             this.renderLineChart()
         }
 
@@ -302,7 +303,9 @@ const mapStateToProps = state => {
         currencyHistory: Object.values(state.currencyHistory),
         supportedCurrencies: Object.keys(state.data),
         selectedCurrency: state.selectedCurrency,
-        currencyPredictionPoints: [Object.values(state.currencyHistory)[Object.values(state.currencyHistory).length - 1]].concat(Object.values(state.currencyPredictionPoints))
+        currencyPredictionPoints: [Object.values(state.currencyHistory)[Object.values(state.currencyHistory).length - 1]]
+            .concat(Object.values(state.currencyPredictionPoints)),
+        allowRendering: state.allowRendering
     };
 };
 const mapDispatchToProps = dispatch => {
@@ -311,6 +314,7 @@ const mapDispatchToProps = dispatch => {
     };
 };
 
+//TODO Review
 const enhancer = compose(connect(mapStateToProps, mapDispatchToProps));
 
 export default enhancer(LineChart);
